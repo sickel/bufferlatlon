@@ -1,0 +1,47 @@
+# This file contains metadata for your plugin.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
+[general]
+name=Lat lon buffer
+qgisMinimumVersion=3.0
+description=This plugin makes a buffer in meters around lat lon point features
+version=0.1
+author=Morten Sickel
+email=morten@sickel.net
+
+about=This plugin can make buffers defined in meters around point features in a global lat lon dataset. It will define a an Azimuthal Equidistant projection centered on each point, make a buffer on the point and reproject the resulting buffer to lat lon.
+
+tracker=https://github.com/sickel/bufferlatlon
+repository=https://github.com/sickel/bufferlatlon
+# End of mandatory metadata
+
+# Recommended items:
+
+hasProcessingProvider=yes
+# Uncomment the following line and add your changelog:
+# changelog=
+
+# Tags are comma separated with spaces allowed
+tags=buffer vector latlon
+
+homepage=https://github.com/sickel/bufferlatlon
+category=Analysis
+icon=icon.png
+# experimental flag
+experimental=True
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
+# Since QGIS 3.8, a comma separated list of plugins to be installed
+# (or upgraded) can be specified.
+# Check the documentation for more information.
+# plugin_dependencies=
+
+Category of the plugin: Raster, Vector, Database or Web
+# category=
+
+# If the plugin can run on QGIS Server.
+server=False
+
