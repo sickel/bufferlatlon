@@ -32,9 +32,17 @@ __revision__ = '$Format:%H$'
 
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.core import (QgsProcessing,
+                       QgsFeature,
+                       QgsGeometry,
+                       QgsPointXY,
+                       QgsProject,
+                       QgsWkbTypes,
+                       QgsCoordinateReferenceSystem,
+                       QgsCoordinateTransform,
                        QgsFeatureSink,
                        QgsProcessingAlgorithm,
                        QgsProcessingParameterFeatureSource,
+                       QgsProcessingParameterDistance,
                        QgsProcessingParameterFeatureSink)
 
 
@@ -65,15 +73,25 @@ class latlonbufferAlgorithm(QgsProcessingAlgorithm):
         with some other properties.
         """
 
-        # We add the input vector features source. It can have any kind of
-        # geometry.
+        # We add the input vector features source. It must be a point cover
         self.addParameter(
             QgsProcessingParameterFeatureSource(
                 self.INPUT,
                 self.tr('Input layer'),
-                [QgsProcessing.TypeVectorAnyGeometry]
+                [QgsProcessing.TypeVectorPoint]
             )
         )
+        
+        self.addParameter(
+            QgsProcessingParameterDistance(
+                'BUFFERDIST',
+                self.tr('Buffer distance (meters)'),
+                defaultValue = 100000,
+                # Make distance units match the INPUT layer units:
+                
+            )
+        )
+        
 
         # We add a feature sink in which to store our processed features (this
         # usually takes the form of a newly created vector layer when the
@@ -95,20 +113,36 @@ class latlonbufferAlgorithm(QgsProcessingAlgorithm):
         # dictionary returned by the processAlgorithm function.
         source = self.parameterAsSource(parameters, self.INPUT, context)
         (sink, dest_id) = self.parameterAsSink(parameters, self.OUTPUT,
-                context, source.fields(), source.wkbType(), source.sourceCrs())
+                context, source.fields(), QgsWkbTypes.Polygon, source.sourceCrs())
 
         # Compute the number of steps to display within the progress bar and
         # get features from source
         total = 100.0 / source.featureCount() if source.featureCount() else 0
         features = source.getFeatures()
-
+        newfeature = QgsFeature()
+        basepnt=QgsGeometry.fromPointXY(QgsPointXY(0,0))
+        outcrs=QgsCoordinateReferenceSystem("EPSG:4326")
+        bufferdist = self.parameterAsDouble(parameters, 'BUFFERDIST',
+                                            context)
         for current, feature in enumerate(features):
             # Stop the algorithm if cancel button has been clicked
             if feedback.isCanceled():
                 break
-
+            attrs = feature.attributes()
+            buffer = basepnt.buffer(bufferdist,5)
+            geom = feature.geometry()
+            point = geom.asPoint()
+            lat = point.y()
+            lon = point.x()
+            projstring = f"PROJ:+proj=aeqd +lat_0={lat} +lon_0={lon}"
+            crs = QgsCoordinateReferenceSystem(projstring)
+            xform = QgsCoordinateTransform(crs,outcrs,QgsProject.instance())
+            buffer.transform(xform)
+            newfeature.setGeometry(buffer)
+            newfeature.setAttributes(attrs)
+            # provider.addFeatures( [feature] )
             # Add a feature in the sink
-            sink.addFeature(feature, QgsFeatureSink.FastInsert)
+            sink.addFeature(newfeature, QgsFeatureSink.FastInsert)
 
             # Update the progress bar
             feedback.setProgress(int(current * total))
