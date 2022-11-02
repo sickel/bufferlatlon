@@ -48,16 +48,10 @@ from qgis.core import (QgsProcessing,
 
 class latlonbufferAlgorithm(QgsProcessingAlgorithm):
     """
-    This is an example algorithm that takes a vector layer and
-    creates a new identical one.
-
-    It is meant to be used as an example of how to create your own
-    algorithms and explain methods and variables used to do it. An
-    algorithm like this will be available in all elements, and there
-    is not need for additional work.
-
-    All Processing algorithms should extend the QgsProcessingAlgorithm
-    class.
+    This algorithm makes a buffer given in meters around a potentially global point dataset in EPSG:4326.
+    
+    For each point, it defines a local crs as an azimuthal equal distance centered in the point. It then
+    does the buffering in this crs before reprojecting the buffer to EPSG:4326. 
     """
 
     # Constants used to refer to parameters and outputs. They will be
@@ -119,28 +113,31 @@ class latlonbufferAlgorithm(QgsProcessingAlgorithm):
         # get features from source
         total = 100.0 / source.featureCount() if source.featureCount() else 0
         features = source.getFeatures()
+        # The newfeature is used as a basis for the buffering.
         newfeature = QgsFeature()
-        basepnt=QgsGeometry.fromPointXY(QgsPointXY(0,0))
-        outcrs=QgsCoordinateReferenceSystem("EPSG:4326")
-        bufferdist = self.parameterAsDouble(parameters, 'BUFFERDIST',
-                                            context)
+        # the point is set to 0,0, the crs will be defined later
+        basepnt = QgsGeometry.fromPointXY(QgsPointXY(0,0))
+        outcrs = QgsCoordinateReferenceSystem("EPSG:4326")
+        bufferdist = self.parameterAsDouble(parameters, 'BUFFERDIST', context)
         for current, feature in enumerate(features):
             # Stop the algorithm if cancel button has been clicked
             if feedback.isCanceled():
                 break
             attrs = feature.attributes()
+            # makes a buffer with the right size in an undefined crs
             buffer = basepnt.buffer(bufferdist,5)
+            # needs to find out where the point is to define the buffer's crs
             geom = feature.geometry()
             point = geom.asPoint()
             lat = point.y()
             lon = point.x()
+            # defines the projection for the buffer and transforms it to EPSG:4326
             projstring = f"PROJ:+proj=aeqd +lat_0={lat} +lon_0={lon}"
             crs = QgsCoordinateReferenceSystem(projstring)
             xform = QgsCoordinateTransform(crs,outcrs,QgsProject.instance())
             buffer.transform(xform)
             newfeature.setGeometry(buffer)
             newfeature.setAttributes(attrs)
-            # provider.addFeatures( [feature] )
             # Add a feature in the sink
             sink.addFeature(newfeature, QgsFeatureSink.FastInsert)
 
