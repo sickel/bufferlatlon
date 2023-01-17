@@ -10,7 +10,7 @@ version=0.1
 author=Morten Sickel
 email=morten@sickel.net
 
-about=This plugin can make buffers defined in meters around point features in a global lat lon dataset. It will define a an Azimuthal Equidistant projection centered on each point, make a buffer on the point and reproject the resulting buffer to lat lon.
+about=This processing plugin can make buffers defined in meters around point features in a global lat lon dataset. It will define a an Azimuthal Equidistant projection centered on each point, make a buffer on the point and reproject the resulting buffer to lat lon.
 
 tracker=https://github.com/sickel/bufferlatlon
 repository=https://github.com/sickel/bufferlatlon

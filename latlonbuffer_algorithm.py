@@ -43,7 +43,8 @@ from qgis.core import (QgsProcessing,
                        QgsProcessingAlgorithm,
                        QgsProcessingParameterFeatureSource,
                        QgsProcessingParameterDistance,
-                       QgsProcessingParameterFeatureSink)
+                       QgsProcessingParameterFeatureSink,
+                       QgsProcessingParameterNumber)
 
 
 class latlonbufferAlgorithm(QgsProcessingAlgorithm):
@@ -85,6 +86,16 @@ class latlonbufferAlgorithm(QgsProcessingAlgorithm):
                 
             )
         )
+        
+        #self.addParameter(
+        #    QgsProcessingParameterNumber.Integer(
+        #        'BUFFERSEGS',
+        #        self.tr('Buffer segments'),
+        #        defaultValue = 5,
+        #        # Make distance units match the INPUT layer units:
+        #        
+        #   )
+        #)
         
 
         # We add a feature sink in which to store our processed features (this

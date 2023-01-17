@@ -72,7 +72,7 @@ class latlonbufferProvider(QgsProcessingProvider):
 
         This string should be short (e.g. "Lastools") and localised.
         """
-        return self.tr('buffer provider')
+        return self.tr('Latlonbuffer')
 
     def icon(self):
         """
